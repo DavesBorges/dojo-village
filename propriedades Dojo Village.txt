@@ -1,0 +1,6 @@
+5 familias - associada a um edificio e uma arte marcial  
+5 armas - one hand + off hand / dual wield / 2 handed weapon / articulated weapon / ranged weapon 
+5 Elementos de magia - Terra Fogo Ar Agua Eter
+5 edificios - Farm (comida) / Madeira + Pedra( Recursos de Construçao) / Pesquisas + Produçao de tropas / Town Hall (trabalhadores)/   
+5 Artes Marciais - Uma por cada atributo principal
+5 atributos principais

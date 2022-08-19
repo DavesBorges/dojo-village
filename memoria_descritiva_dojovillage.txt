@@ -1,0 +1,12 @@
+Nome: Dojo Village
+
+Objectivo: Jogo online Rpg com gestao de aldeia/tropas com casino;
+
+Descrição: O jogo consiste em um Rpg (Role Playing Game) com gestao de aldeia e tropas.
+           Vai ter uma moeda de jogo para alem dos recursos tradicionais (madeira, pedra, comida,agua).
+           O jogador vai poder ter a sua aldeia, evoluir edificios, coletar comida e agua para seus tropas e funcionarios, madeira e pedra para evoluçao e manutençao de edificios.
+           A parte da comida, madeira e pedra, vao existir os "Ores" que vao poder ser "Prospected" para definir a sua qualidade (ferro, carvao, e ouro).
+           Pedras preciosas tambem podem vir a ser encontradas durante o Prospect de Ores.
+           A parte do jogo vai existir um casino, com roleta, blackjack , poker e jogo do rapa.
+
+
