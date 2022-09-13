@@ -3271,6 +3271,11 @@
   "resolved" "https://registry.npmjs.org/kleur/-/kleur-3.0.3.tgz"
   "version" "3.0.3"
 
+"kysely@^0.21.6":
+  "integrity" "sha512-DNecGKzzYtx2OumPJ8inrVFsSfq1lNHLFZDJvXMQxqbrTFElqq70VLR3DiK0P9fw4pB+xXTYvLiLurWiYqgk3w=="
+  "resolved" "https://registry.npmjs.org/kysely/-/kysely-0.21.6.tgz"
+  "version" "0.21.6"
+
 "leven@^3.1.0":
   "integrity" "sha512-qsda+H8jTaUaN/x5vzW2rzc+8Rw4TAQ/4KjB46IwK5VH+IlVeeeje/EoZRpiXvIqjFgK84QffqPztGI3VBLG1A=="
   "resolved" "https://registry.npmjs.org/leven/-/leven-3.1.0.tgz"
