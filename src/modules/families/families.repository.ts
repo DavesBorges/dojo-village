@@ -44,7 +44,7 @@ export class FamiliesRepository {
       .selectFrom('family')
       .selectAll('family')
       .where('id', '=', id)
-      .execute();
+      .executeTakeFirst();
   }
 
   /**
