@@ -13,7 +13,6 @@ export let database: Kysely<DB>;
  * @param db the db reference to set as the global database
  */
 export const setupDatabase = (db?: Kysely<DB>) => {
-  console.log({ DB_PATH: process.env.DB_PATH });
   if (!db) {
     db = new Kysely<DB>({
       dialect: new SqliteDialect({
