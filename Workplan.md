@@ -1,7 +1,8 @@
 ## Next steps
+- Create chracters modules
 
 - [X] Integrate uuid module
 ## Create modules for read, update, and delete entities
-- [ ] users
+- [X] users
 - [X] families
 - [ ] characters
