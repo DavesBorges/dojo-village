@@ -4,6 +4,7 @@ import { ActionsModule } from './modules/actions/actions.module';
 import { CharactersModule } from './modules/characters/characters.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { FamiliesModule } from './modules/families/families.module';
+import { SkillsModule } from './modules/skills/skills.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -13,6 +14,7 @@ import { UsersModule } from './modules/users/users.module';
     FamiliesModule,
     UsersModule,
     CharactersModule,
+    SkillsModule,
   ],
   providers: [AppService],
 })
