@@ -63,6 +63,9 @@ describe('characters controller', () => {
 
     const database = app.get<Kysely<DB>>(Kysely);
 
+    await database.deleteFrom('family').execute();
+    await database.deleteFrom('character').execute();
+
     await Promise.all(
       families.map((family) =>
         database.insertInto('family').values(family).execute(),
