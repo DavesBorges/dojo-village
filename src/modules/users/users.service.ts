@@ -40,4 +40,8 @@ export class UsersService {
     await this.repository.deleteUser(id);
     return user;
   }
+
+  findAllUserFriends(userId: string) {
+    return this.repository.findUserFriends(userId);
+  }
 }

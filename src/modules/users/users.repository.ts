@@ -6,6 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserGetManyResponse } from './responses/user-get-many.response';
 import { UserGetSingleResponse } from './responses/user-get-single-response';
+import '../../utils/kysely.extensions';
 
 @Injectable()
 export class UsersRepository {
@@ -49,5 +50,33 @@ export class UsersRepository {
 
   async deleteUser(id: string): Promise<void> {
     await this.database.deleteFrom('user').where('id', '=', id).execute();
+  }
+  async findUserFriends(userId: string) {
+    const friendShips = await this.database
+      .selectFrom('friendship')
+      .selectAll('friendship')
+      .leftJsonJoin(
+        'user as receiverUser',
+        'friendship.receiver',
+        'receiverUser.id',
+        ['id', 'character', 'currentArena', 'name'],
+      )
+      .leftJsonJoin(
+        'user as senderUser',
+        'friendship.sender',
+        'senderUser.id',
+        ['id', 'character', 'currentArena', 'name'],
+      )
+      .where('friendship.sender', '=', userId)
+      .orWhere('friendship.receiver', '=', userId)
+      .execute();
+
+    const friends = friendShips.map((friend) =>
+      friend.receiver !== userId
+        ? JSON.parse(friend.receiverUser as unknown as string)
+        : JSON.parse(friend.senderUser as unknown as string),
+    );
+
+    return friends;
   }
 }

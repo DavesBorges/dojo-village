@@ -9,10 +9,17 @@ import {
 import { TableExpression } from 'kysely/dist/cjs/parser/table-parser';
 import { From } from 'kysely/dist/cjs/parser/table-parser';
 import { AliasedQueryBuilder, SelectQueryBuilder } from 'kysely';
-import { AnyColumn, Nullable } from 'kysely/dist/cjs/util/type-utils';
-import { QueryBuilderWithSelection } from 'kysely/dist/cjs/parser/select-parser';
+import {
+  AnyColumn,
+  AnyColumnWithTable,
+  Nullable,
+} from 'kysely/dist/cjs/util/type-utils';
 
-// Your handmade utils' library file
+import {
+  QueryBuilderWithSelection,
+  SelectExpression,
+} from 'kysely/dist/cjs/parser/select-parser';
+
 export type UnionOfArrayElements<ARR_T extends Readonly<unknown[]>> =
   ARR_T[number];
 
@@ -59,6 +66,39 @@ declare module 'kysely/dist/cjs/query-builder/select-query-builder' {
       AliasedRawBuilder<
         Selection<From<DB, TABLE>, TABLE, UnionOfArrayElements<SE>>,
         SnakeToCamel<NAME>
+      >
+    >;
+
+    /**
+     * Performs a left join with **table** returning the **selections** as a json field
+     * @param table
+     * @param leftTableColumn
+     * @param rightTableColumn
+     * @param selections
+     */
+    leftJsonJoin<
+      JTBLE extends TableExpression<DB, TB> & string,
+      K1 extends JoinReferenceExpression<DB, TB, JTBLE> &
+        AnyColumnWithTable<DB, TB>,
+      K2 extends JoinReferenceExpression<DB, TB, JTBLE> &
+        `${ExtractAliasFromTableExpression<DB, JTBLE>}.${string}`,
+      SE extends ReadonlyArray<
+        SelectExpression<DB, TABLE> & AnyColumn<DB, TABLE>
+      >,
+      NAME extends ExtractAliasFromTableExpression<DB, TB> & string,
+      TABLE extends TableFromExpression<DB, JTBLE>,
+    >(
+      table: JTBLE,
+      leftTableColumn: K1,
+      rightTableColumn: K2,
+      selections: SE,
+    ): QueryBuilderWithSelection<
+      From<DB, TB> & Record<NAME, Nullable<DB[TABLE]>>,
+      TB | TABLE,
+      O,
+      AliasedRawBuilder<
+        Selection<From<DB, JTBLE>, TABLE, UnionOfArrayElements<SE>>,
+        SnakeToCamel<ExtractAliasFromTableExpression<DB, JTBLE> & string>
       >
     >;
   }
@@ -207,6 +247,70 @@ SelectQueryBuilder.prototype.defaultLeftJoinToJson = function <
   return json;
 };
 
+SelectQueryBuilder.prototype.leftJsonJoin = function <
+  DB,
+  TB extends keyof DB & string,
+  O,
+  JTBLE extends TableExpression<DB, TB> & string,
+  K1 extends JoinReferenceExpression<DB, TB, JTBLE>,
+  K2 extends JoinReferenceExpression<DB, TB, JTBLE>,
+  SE extends ReadonlyArray<SelectExpression<DB, TABLE> & AnyColumn<DB, TABLE>>,
+  NAME extends ExtractAliasFromTableExpression<DB, TB> & string,
+  TABLE extends TableFromExpression<DB, JTBLE> & string,
+>(
+  this: SelectQueryBuilder<DB, TB, O>,
+  table: JTBLE,
+  k1: K1,
+  k2: K2,
+  selections: SE,
+): QueryBuilderWithSelection<
+  From<DB, TB> & Record<NAME, Nullable<DB[TABLE]>>,
+  TB | TABLE,
+  O,
+  AliasedRawBuilder<
+    Selection<From<DB, JTBLE>, TABLE, UnionOfArrayElements<SE>>,
+    SnakeToCamel<ExtractAliasFromTableExpression<DB, JTBLE> & string>
+  >
+> {
+  // Default alias to the tableName
+  let alias: NAME = table as unknown as NAME & string;
+
+  // Default the really table name to table name in case we are not using an alias
+  let realTableName = table as unknown as TABLE & string;
+
+  // This is how we check for alias. If there is a space in the tableName it means
+  // it's an alias
+  const indexOfSpace = realTableName.indexOf(' ');
+  if (indexOfSpace > 0) {
+    // Extract the actual tableName
+    realTableName = realTableName.substring(0, indexOfSpace) as TABLE & string;
+
+    // Extract the alias and snakeCaseIt
+    alias = table.substring(table.lastIndexOf(' ') + 1) as NAME;
+    alias = camelToSnakeCase(alias) as NAME;
+  }
+
+  // Perform the join
+  const joined = this.leftJoin(table, k1, k2) as SelectQueryBuilder<
+    From<DB, TB> & Record<NAME, Nullable<DB[TABLE]>>,
+    TB | TABLE,
+    O
+  >;
+
+  // Invoke the JSON_OBJECT to return the JSON representation of selections passing it as alias
+  const json = joined.select(
+    JSON_OBJECT<DB, TABLE, SE>(alias as unknown as TABLE, selections).as(alias),
+  );
+  return json as QueryBuilderWithSelection<
+    From<DB, TB> & Record<NAME, Nullable<DB[TABLE]>>,
+    TB | TABLE,
+    O,
+    AliasedRawBuilder<
+      Selection<From<DB, JTBLE>, TABLE, UnionOfArrayElements<SE>>,
+      SnakeToCamel<ExtractAliasFromTableExpression<DB, JTBLE> & string>
+    >
+  >;
+};
 // expands object types one level deep
 export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 

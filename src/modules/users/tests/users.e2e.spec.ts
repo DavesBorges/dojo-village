@@ -15,19 +15,33 @@ describe('users module', () => {
 
   const users = [
     { id: '1', name: 'John', character: null, currentArena: null },
-    { id: '2', name: 'Marr', character: null, currentArena: null },
+    { id: '2', name: 'Paul', character: null, currentArena: null },
+    { id: '3', name: 'Anne', character: null, currentArena: null },
+    { id: '4', name: 'Marr', character: null, currentArena: null },
   ];
 
-  beforeAll(async () => {
+  const friendShips = [
+    {
+      id: '1',
+      sender: '1',
+      receiver: '2',
+      status: 1,
+    },
+  ];
+
+  beforeEach(async () => {
     app = await initModuleForE2ETest([UsersModule, DatabaseModule]);
     request = new TestRequst(app);
 
     const database = app.get<Kysely<DB>>(Kysely);
     await database.deleteFrom('user').execute();
+    await database.deleteFrom('friendship').execute();
 
     await Promise.all(
       users.map((user) => database.insertInto('user').values(user).execute()),
     );
+
+    await database.insertInto('friendship').values(friendShips).execute();
   });
 
   describe('GET /users read many users', () => {
@@ -169,6 +183,30 @@ describe('users module', () => {
 
       //Then
       expect(afterDeleteGetResponse.status).toBe(404);
+    });
+  });
+
+  describe('/users/<id>/friends', () => {
+    describe('GET /users/<id>/friends Get user friends ', () => {
+      test('Should read all user friends', async () => {
+        // Given
+        let path = `/users/1/friends`;
+
+        // When
+        let response = await request.get(path);
+
+        // Then
+        expect(response.body).toStrictEqual([users[1]]);
+
+        // Given
+        path = `/users/2/friends`;
+
+        // When
+        response = await request.get(path);
+
+        // then
+        expect(response.body).toStrictEqual([users[0]]);
+      });
     });
   });
 });
