@@ -1,14 +1,13 @@
 export interface Arena {
-  awayPlayer: string;
-  homePlayer: string;
+  awayPlayer: string | null;
+  homePlayer: string | null;
   id: string;
-  status: number;
 }
 
 export interface Character {
   agility: number;
   dexterity: number;
-  family: string;
+  family: string | null;
   gender: number;
   hp: number;
   id: string;
@@ -24,10 +23,22 @@ export interface Family {
   id: string;
 }
 
-export interface MartialArt {
-  code: string;
+export interface Friendship {
+  id: string;
+  receiver: string | null;
+  sender: string | null;
+  status: number;
+}
+
+export interface Skill {
+  baseDamage: number;
+  casting: number;
+  coolDown: number;
+  cost: number;
   description: string;
-  id: number;
+  family: string | null;
+  id: string;
+  purpose: string;
 }
 
 export interface User {
@@ -41,6 +52,7 @@ export interface DB {
   arena: Arena;
   character: Character;
   family: Family;
-  martial_art: MartialArt;
+  friendship: Friendship;
+  skill: Skill;
   user: User;
 }
