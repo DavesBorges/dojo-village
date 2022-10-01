@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { NotFoundException } from '../../exceptions/NotFount';
 import { CreateFamilyDto } from './dto/create-family.dto';
 import { UpdateFamilyDto } from './dto/update-family.dto';
 import { Family } from './entities/family.entity';
 import { FamiliesRepository } from './families.repository';
+import { FamilyGetManyResponse } from './responses/family-get-many.response';
+import { FamilyGetSingleResponse } from './responses/family-get-single.response';
 
 @Injectable()
 export class FamiliesService {
@@ -27,7 +30,7 @@ export class FamiliesService {
   /**
    * Retrieve all families
    */
-  findAll() {
+  findAll(): Promise<FamilyGetManyResponse[]> {
     return this.familiesRepository.getAllFamilies();
   }
 
@@ -36,8 +39,13 @@ export class FamiliesService {
    * @param id  the id of the family to retrieve
    * @returns the family found
    */
-  findOne(id: string) {
-    return this.familiesRepository.getFamilyById(id);
+  async findOne(id: string): Promise<FamilyGetSingleResponse> {
+    const family = await this.familiesRepository.getFamilyById(id);
+    if (!family) {
+      throw new NotFoundException();
+    }
+
+    return family;
   }
 
   /**
@@ -48,6 +56,9 @@ export class FamiliesService {
    */
   async update(id: string, updateFamilyDto: UpdateFamilyDto) {
     const updatePayload = { id, ...updateFamilyDto };
+
+    await this.findOne(id);
+
     await this.familiesRepository.modifyFamily(updatePayload);
     return this.familiesRepository.getFamilyById(id);
   }
@@ -58,7 +69,7 @@ export class FamiliesService {
    * @returns the deleted family
    */
   async remove(id: string) {
-    const family = await this.familiesRepository.getFamilyById(id);
+    const family = await this.findOne(id);
 
     await this.familiesRepository.removeFamily(id);
     return family;

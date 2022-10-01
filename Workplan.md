@@ -1,8 +1,4 @@
 ## Next steps
-- Create chracters modules
+- Setup migrations
 
-- [X] Integrate uuid module
-## Create modules for read, update, and delete entities
-- [X] users
-- [X] families
-- [ ] characters
+- Build basic ui for management
