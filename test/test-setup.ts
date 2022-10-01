@@ -8,7 +8,7 @@ import { Test } from '@nestjs/testing';
 import Database = require('better-sqlite3');
 import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely';
 import { DB } from '../src/data/schema-definition';
-import { database, setupDatabase } from '../src/data/setup_database';
+import { setupDatabase } from '../src/data/setup_database';
 import { BusinessLogicExceptionFilter } from '../src/exceptions/exceptions-filter';
 
 export const mockGlobalDatabase = () => {

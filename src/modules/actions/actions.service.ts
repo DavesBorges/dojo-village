@@ -1,45 +1,43 @@
-import { Injectable } from "@nestjs/common";
-import { CreateActionDto } from "./dto/create-action.dto";
-import { UpdateActionDto } from "./dto/update-action.dto";
-import { Action } from "./entities/action.entity";
-import { Character } from "./entities/character.entity";
+import { Injectable } from '@nestjs/common';
+import { Action } from './entities/action.entity';
+import { Character } from './entities/character.entity';
 
 @Injectable()
 export class ActionsService {
   characters: Character[] = [
     {
-      ownerId: "1",
+      ownerId: '1',
       hp: 100,
-      name: "Bruce Lee",
+      name: 'Bruce Lee',
       skills: [
         {
-          id: "1",
-          description: "Jab 👊",
+          id: '1',
+          description: 'Jab 👊',
           baseDamage: 4,
           coolDown: 1,
         },
         {
-          id: "2",
-          description: "UpperCut ✊",
+          id: '2',
+          description: 'UpperCut ✊',
           baseDamage: 8,
           coolDown: 1,
         },
       ],
     },
     {
-      ownerId: "2",
+      ownerId: '2',
       hp: 100,
-      name: "Jean Claude Van-damme",
+      name: 'Jean Claude Van-damme',
       skills: [
         {
-          id: "1",
-          description: "Knee 🦵",
+          id: '1',
+          description: 'Knee 🦵',
           baseDamage: 6,
           coolDown: 1,
         },
         {
-          id: "2",
-          description: "Elbow 💪",
+          id: '2',
+          description: 'Elbow 💪',
           baseDamage: 7,
           coolDown: 1,
         },
@@ -51,7 +49,7 @@ export class ActionsService {
   identify(ownerId: string, clientId: string) {
     console.log({ ownerId });
     this.clientToCharacter[clientId] = this.characters.find(
-      (character) => character.ownerId === ownerId
+      (character) => character.ownerId === ownerId,
     );
     return this.clientToCharacter[clientId];
   }
@@ -63,16 +61,12 @@ export class ActionsService {
     const character = this.clientToCharacter[clientId];
     console.log({ character });
     const opponent = this.characters.find(
-      (element) => element.ownerId !== character.ownerId
+      (element) => element.ownerId !== character.ownerId,
     );
 
     const skill = character.skills.find((skill) => skill.id === action.skillId);
     opponent.hp -= skill.baseDamage;
 
     return this.characters;
-  }
-
-  create(createActionDto: CreateActionDto) {
-    return "This action adds a new action";
   }
 }

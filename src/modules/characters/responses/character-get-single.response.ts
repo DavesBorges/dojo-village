@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsString } from 'class-validator';
 import { IsNestedObject } from '../../../utils/class-validator.decorators';
 
@@ -10,6 +11,7 @@ export class CharacterNestedFamily {
 }
 
 export class CharacterGetSingleResponse {
+  @ApiProperty()
   @IsNumber()
   agility: number;
 

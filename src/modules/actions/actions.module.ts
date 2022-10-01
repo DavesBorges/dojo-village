@@ -3,6 +3,6 @@ import { ActionsService } from './actions.service';
 import { ActionsGateway } from './actions.gateway';
 
 @Module({
-  providers: [ActionsGateway, ActionsService]
+  providers: [ActionsGateway, ActionsService],
 })
 export class ActionsModule {}

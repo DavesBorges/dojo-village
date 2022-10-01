@@ -5,6 +5,6 @@ import { CharactersRepository } from './characters-repository';
 
 @Module({
   controllers: [CharactersController],
-  providers: [CharactersService, CharactersRepository]
+  providers: [CharactersService, CharactersRepository],
 })
 export class CharactersModule {}
