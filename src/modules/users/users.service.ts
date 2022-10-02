@@ -90,7 +90,7 @@ export class UsersService {
   }
 
   async updateFriendShip(userId: string, friendId: string, status: string) {
-    console.log({ status });
+    status === 'OK';
     await this.repository.acceptFriendShip(userId, friendId);
     return this.findUserFriendById(userId, friendId);
   }
