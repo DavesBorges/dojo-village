@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { InvalidArgumentException } from '../../exceptions/InvalidArgument';
 import { NotFoundException } from '../../exceptions/NotFount';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -43,5 +44,54 @@ export class UsersService {
 
   findAllUserFriends(userId: string) {
     return this.repository.findUserFriends(userId);
+  }
+
+  async findUserFriendById(userId: string, friendId: string) {
+    const friend = await this.repository.findUserFriendById(userId, friendId);
+    if (!friend) {
+      throw new NotFoundException();
+    }
+
+    return friend;
+  }
+
+  async createFriendRequest(userId: string, friendId: string) {
+    const user = await this.repository.getUserById(userId);
+
+    if (!user) {
+      throw new InvalidArgumentException('User does not exist');
+    }
+
+    if (userId == friendId) {
+      throw new InvalidArgumentException(
+        'Cannot send a friend request to yourself',
+      );
+    }
+
+    const friend = await this.repository.getUserById(friendId);
+    if (!friend) {
+      throw new InvalidArgumentException('Friend does not exist');
+    }
+
+    const userFriends = await this.findAllUserFriends(userId);
+
+    const alreadyFriend = await userFriends.find(
+      (userFriend) => userFriend.id === friendId,
+    );
+
+    if (alreadyFriend) {
+      throw new InvalidArgumentException(
+        'Already friend or invite already sent',
+      );
+    }
+
+    await this.repository.createFriend(userId, friendId);
+    return this.findUserFriendById(userId, friendId);
+  }
+
+  async updateFriendShip(userId: string, friendId: string, status: string) {
+    console.log({ status });
+    await this.repository.acceptFriendShip(userId, friendId);
+    return this.findUserFriendById(userId, friendId);
   }
 }

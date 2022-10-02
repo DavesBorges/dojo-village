@@ -5,6 +5,7 @@ import { initModuleForE2ETest } from '../../../../test/test-setup';
 import { DB } from '../../../data/schema-definition';
 import { validateOrRejectAssureLayout } from '../../../utils/class-validator-helpers';
 import { DatabaseModule } from '../../database/database.module';
+import { FriendResponse } from '../responses/friend.response';
 import { UserGetManyResponse } from '../responses/user-get-many.response';
 import { UserGetSingleResponse } from '../responses/user-get-single-response';
 import { UsersModule } from '../users.module';
@@ -196,7 +197,8 @@ describe('users module', () => {
         let response = await request.get(path);
 
         // Then
-        expect(response.body).toStrictEqual([users[1]]);
+        expect(response.body[0].id).toBe(users[1].id);
+        await validateOrRejectAssureLayout(FriendResponse, response.body[0]);
 
         // Given
         path = `/users/2/friends`;
@@ -205,7 +207,68 @@ describe('users module', () => {
         response = await request.get(path);
 
         // then
-        expect(response.body).toStrictEqual([users[0]]);
+        expect(response.body[0].id).toBe(users[0].id);
+        await validateOrRejectAssureLayout(FriendResponse, response.body[0]);
+      });
+    });
+
+    describe('GET /users/<id>/friends/<id> read a user friend', () => {
+      test('Should read a user friend by id', async () => {
+        // Given
+        const path = `/users/1/friends/2`;
+
+        // When
+        const response = await request.get(path);
+
+        // Then
+        expect(response.body.id).toBe(users[1].id);
+        await validateOrRejectAssureLayout(FriendResponse, response.body);
+      });
+
+      test('Should return 404 if the user friend does not exist', async () => {
+        // Given
+        const path = `/users/1/friends/3`;
+
+        // When
+        const response = await request.get(path);
+
+        // Then
+        expect(response.status).toBe(404);
+      });
+    });
+
+    describe('POST /users/<id>/friends create a friend request', () => {
+      test('Should create a friend request', async () => {
+        // Given
+        const path = `/users/1/friends`;
+        const createFriendRequest = { id: '3' };
+
+        // When
+        const postResponse = await request.post(path, createFriendRequest);
+        const getResponse = await request.get(`${path}/3`);
+
+        // Then
+        expect(postResponse.body).toStrictEqual(getResponse.body);
+        expect(getResponse.body.status).toBe('PENDING');
+      });
+    });
+
+    describe('PATCH /users/<userId>/friends/<friendId>', () => {
+      test('Should accept a friend request', async () => {
+        // Given
+        const path = `/users/1/friends`;
+        const createFrendRequest = { id: '3' };
+
+        // When
+        await request.post(path, createFrendRequest);
+        const patchResponse = await request.patch(`/users/3/friends/1`, {
+          status: 'ACCEPTED',
+        });
+        const afterPatchGetResponse = await request.get(`/users/3/friends/1`);
+
+        // then
+        expect(patchResponse.body).toStrictEqual(afterPatchGetResponse.body);
+        expect(afterPatchGetResponse.body.status).toBe('ACCEPTED');
       });
     });
   });

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { DB } from '../../data/schema-definition';
+import { DB, Friendship, User } from '../../data/schema-definition';
 import { generateUUID } from '../../utils/uuid';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -8,6 +8,10 @@ import { UserGetManyResponse } from './responses/user-get-many.response';
 import { UserGetSingleResponse } from './responses/user-get-single-response';
 import '../../utils/kysely.extensions';
 
+interface FriendshipWithUser extends Friendship {
+  senderUser: User;
+  receiverUser: User;
+}
 @Injectable()
 export class UsersRepository {
   private database: Kysely<DB>;
@@ -51,8 +55,66 @@ export class UsersRepository {
   async deleteUser(id: string): Promise<void> {
     await this.database.deleteFrom('user').where('id', '=', id).execute();
   }
+
   async findUserFriends(userId: string) {
-    const friendShips = await this.database
+    const friendShipsQueryBuilder = this.constructSearchFriendQuery();
+
+    const friendShips = await friendShipsQueryBuilder
+      .where('friendship.sender', '=', userId)
+      .orWhere('friendship.receiver', '=', userId)
+      .execute();
+
+    return friendShips.map((friendship) =>
+      this.extractFriendFromFriendship(friendship, userId),
+    );
+  }
+  async findUserFriendById(userId: string, friendId: string) {
+    const friendshipsQueryBuilder = this.constructSearchFriendQuery();
+
+    const friendship = await friendshipsQueryBuilder
+      .where((qb) =>
+        qb
+          .where('friendship.receiver', '=', userId)
+          .where('friendship.sender', '=', friendId),
+      )
+      .orWhere((qb) =>
+        qb
+          .where('friendship.receiver', '=', friendId)
+          .where('friendship.sender', '=', userId),
+      )
+      .executeTakeFirst();
+
+    if (!friendship) {
+      return undefined;
+    }
+
+    return this.extractFriendFromFriendship(friendship, userId);
+  }
+
+  async createFriend(userId: string, receiver: string) {
+    const id = generateUUID();
+
+    const friendShip: Friendship = {
+      id,
+      sender: userId,
+      receiver,
+      status: 0,
+    };
+
+    await this.database.insertInto('friendship').values(friendShip).execute();
+  }
+
+  async acceptFriendShip(userId: string, friend: string) {
+    await this.database
+      .updateTable('friendship')
+      .set({ status: 1 })
+      .where('friendship.sender', '=', friend)
+      .where('friendship.receiver', '=', userId)
+      .execute();
+  }
+
+  private constructSearchFriendQuery() {
+    return this.database
       .selectFrom('friendship')
       .selectAll('friendship')
       .leftJsonJoin(
@@ -66,17 +128,33 @@ export class UsersRepository {
         'friendship.sender',
         'senderUser.id',
         ['id', 'character', 'currentArena', 'name'],
-      )
-      .where('friendship.sender', '=', userId)
-      .orWhere('friendship.receiver', '=', userId)
-      .execute();
+      );
+  }
 
-    const friends = friendShips.map((friend) =>
-      friend.receiver !== userId
-        ? JSON.parse(friend.receiverUser as unknown as string)
-        : JSON.parse(friend.senderUser as unknown as string),
-    );
+  private convertFriendShipStatusToString(status: number): string {
+    const friendShipToStatusMap = {
+      0: 'PENDING',
+      1: 'ACCEPTED',
+    };
 
-    return friends;
+    return friendShipToStatusMap[status];
+  }
+
+  private extractFriendFromFriendship(
+    friendship: FriendshipWithUser,
+    userId: string,
+  ) {
+    const friend =
+      friendship.receiver !== userId
+        ? {
+            ...JSON.parse(friendship.receiverUser as unknown as string),
+            status: this.convertFriendShipStatusToString(friendship.status),
+          }
+        : {
+            ...JSON.parse(friendship.senderUser as unknown as string),
+            status: this.convertFriendShipStatusToString(friendship.status),
+          };
+
+    return friend;
   }
 }
